@@ -1,0 +1,51 @@
+{
+  "name": "@renchris/replicache-react",
+  "version": "6.0.0",
+  "description": "Miscellaneous utilities for using Replicache with React (React 19+ fork)",
+  "homepage": "https://replicache.dev",
+  "repository": "github:renchris/replicache-react",
+  "type": "module",
+  "module": "out/index.js",
+  "types": "out/index.d.ts",
+  "exports": "./out/index.js",
+  "scripts": {
+    "format": "prettier --write 'src/*.{js,jsx,json,ts,tsx,html,css,md}' '*.{cjs,js,jsx,json,ts,tsx,html,css,md}'",
+    "check-format": "prettier --check 'src/*.{js,jsx,json,ts,tsx,html,css,md}' '*.{cjs,js,jsx,json,ts,tsx,html,css,md}'",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
+    "build": "tsc",
+    "test": "web-test-runner \"src/**/*.test.{jsx,js,ts,tsx}\"",
+    "test:watch": "npm test -- --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@rocicorp/resolver": "^1.0.1",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/react": "^17",
+    "@types/react-dom": "^17",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "@web/dev-server": "^0.4.1",
+    "@web/dev-server-esbuild": "^1.0.1",
+    "@web/test-runner": "^0.18.0",
+    "@web/test-runner-playwright": "^0.11.0",
+    "chai": "^5.0.0-alpha.2",
+    "eslint": "^8.54.0",
+    "playwright": "^1.40.1",
+    "prettier": "^3.1.0",
+    "react": "npm:@esm-bundle/react@^17.0.2-fix.1",
+    "react-dom": "npm:@esm-bundle/react-dom@^17.0.2-fix.0",
+    "replicache": "^14.0.0",
+    "typescript": "^5.3.2"
+  },
+  "files": [
+    "out/index.js",
+    "out/index.d.ts"
+  ]
+}

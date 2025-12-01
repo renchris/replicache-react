@@ -1,6 +1,6 @@
 {
   "name": "replicache-react",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "description": "Miscellaneous utilities for using Replicache with React",
   "homepage": "https://replicache.dev",
   "repository": "github:rocicorp/replicache-react",
@@ -21,8 +21,8 @@
   "author": "",
   "license": "ISC",
   "peerDependencies": {
-    "react": ">=16.0 <19.0",
-    "react-dom": ">=16.0 <19.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@rocicorp/resolver": "^1.0.1",

@@ -11,7 +11,7 @@ function sleep(ms: number | undefined): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-let roots = new WeakMap<HTMLElement, Root>();
+const roots = new WeakMap<HTMLElement, Root>();
 
 function render(element: React.ReactNode, container: HTMLElement): void {
   let root = roots.get(container);

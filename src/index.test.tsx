@@ -212,7 +212,9 @@ test('changing subscribable instances', async () => {
   const {resolve: r3} = resolver();
   render(<A rep={undefined} val="c" res={r3} />, div);
   await sleep(1);
-  expect(div.textContent).toBe('');
+  // With keepPreviousData=true (default), previous data is preserved when rep becomes undefined
+  // So subResult is 'b' (previous value), not undefined, thus val='c' is rendered
+  expect(div.textContent).toBe('c');
 
   await rep1.close();
   await rep2.close();

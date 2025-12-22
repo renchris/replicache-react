@@ -1,9 +1,9 @@
 {
-  "name": "replicache-react",
-  "version": "5.0.1",
-  "description": "Miscellaneous utilities for using Replicache with React",
+  "name": "@renchris/replicache-react",
+  "version": "6.1.0",
+  "description": "Miscellaneous utilities for using Replicache with React (React 19+ fork)",
   "homepage": "https://replicache.dev",
-  "repository": "github:rocicorp/replicache-react",
+  "repository": "github:renchris/replicache-react",
   "type": "module",
   "module": "out/index.js",
   "types": "out/index.d.ts",

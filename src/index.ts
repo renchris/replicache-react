@@ -1,4 +1,4 @@
-import {DependencyList, useEffect, useState} from 'react';
+import {DependencyList, useEffect, useRef, useState} from 'react';
 
 export type Subscribable<Tx> = {
   subscribe<Data>(
@@ -33,6 +33,12 @@ export type UseSubscribeOptions<QueryRet, Default> = {
   default?: Default;
   dependencies?: DependencyList | undefined;
   isEqual?: ((a: QueryRet, b: QueryRet) => boolean) | undefined;
+  /**
+   * When true (default), preserves the previous snapshot value during dependency
+   * transitions instead of resetting to undefined. This eliminates UI flash when
+   * switching between subscriptions with different dependencies.
+   */
+  keepPreviousData?: boolean;
 };
 
 /**
@@ -50,8 +56,10 @@ export function useSubscribe<Tx, QueryRet, Default = undefined>(
   query: (tx: Tx) => Promise<QueryRet>,
   options: UseSubscribeOptions<QueryRet, Default> = {},
 ): RemoveUndefined<QueryRet> | Default {
-  const {default: def, dependencies = [], isEqual} = options;
+  const {default: def, dependencies = [], isEqual, keepPreviousData = true} = options;
   const [snapshot, setSnapshot] = useState<QueryRet | undefined>(undefined);
+  const prevSnapshotRef = useRef<QueryRet | undefined>(undefined);
+
   useEffect(() => {
     if (!r) {
       return;
@@ -59,6 +67,8 @@ export function useSubscribe<Tx, QueryRet, Default = undefined>(
 
     const unsubscribe = r.subscribe(query, {
       onData: data => {
+        // Track the previous value for keepPreviousData feature
+        prevSnapshotRef.current = data;
         // This is safe because we know that subscribe in fact can only return
         // `R` (the return type of query or def).
         callbacks.push(() => setSnapshot(data));
@@ -72,10 +82,18 @@ export function useSubscribe<Tx, QueryRet, Default = undefined>(
 
     return () => {
       unsubscribe();
-      setSnapshot(undefined);
+      // Only reset state if keepPreviousData is false
+      if (!keepPreviousData) {
+        setSnapshot(undefined);
+      }
     };
   }, [r, ...dependencies]);
+
+  // Return previous data while new subscription initializes (eliminates flash)
   if (snapshot === undefined) {
+    if (keepPreviousData && prevSnapshotRef.current !== undefined) {
+      return prevSnapshotRef.current as RemoveUndefined<QueryRet>;
+    }
     return def as Default;
   }
   return snapshot as RemoveUndefined<QueryRet>;

@@ -8,31 +8,6 @@
 
 Provides a `useSubscribe()` hook for React which wraps Replicache's `subscribe()` method.
 
-## React 19+ Fork
-
-This is a **React 19+ compatible fork** of the official `replicache-react` package. Key differences:
-
-- **Removes deprecated batching APIs**: No longer relies on `unstable_batchedUpdates`, leveraging React 19's automatic batching instead
-- **Adds `keepPreviousData` option**: Eliminates UI flash during navigation by preserving data across subscription transitions
-- **Requires React 19+**: Takes advantage of improved batching behavior in React 19
-
-### Installation
-
-```bash
-npm install @renchris/replicache-react
-# or via GitHub
-npm install renchris/replicache-react#feat/react-19-automatic-batching
-```
-
-**Peer Dependencies**: React 19+
-
-### Migration from Official Package
-
-1. Update to React 19+
-2. Replace `replicache-react` with `@renchris/replicache-react` in your `package.json`
-3. No code changes required - API is fully compatible
-4. Optional: Use new `keepPreviousData` option to prevent UI flash during navigation
-
 ## API
 
 ### function useSubscribe
@@ -42,12 +17,12 @@ React hook that allows you monitor replicache changes
 | Parameter        | Type                                        | Description                                                                      |
 | :--------------- | :------------------------------------------ | :------------------------------------------------------------------------------- |
 | `rep`            | `Replicache`                                | Replicache instance that is being monitored                                      |
-| `query`          | `(tx: ReadTransaction) => Promise<R>`       | Query that retrieves data to be watched                                          |
+| `query`          | `(tx: ReadTransaction) => Promise<R>`       | Query that retrieves data to be watched                                          |
 | `options?`       | `Object \| undefined`                       | Option bag containing the named arguments listed below ⬇️                        |
 | `.default?`      | `R \| undefined = undefined`                | Default value returned on first render _or_ whenever `query` returns `undefined` |
 | `.dependencies?` | `Array<any> = []`                           | List of dependencies, query will be rerun when any of these change               |
-| `.isEqual?`      | `((a: R, b: R) => boolean) = jsonDeepEqual` | Compare two returned values. Used to know whether to refire subscription.        |
-| `.keepPreviousData?` | `boolean = true`                            | When `true` (default), preserves previous data during dependency transitions to eliminate UI flash. Set to `false` to reset immediately. |
+| `.isEqual?`      | `((a: R, b: R) => boolean) = jsonDeepEqual` | Compare two returned values. Used to know whether to refire subscription.        |
+| `.keepPreviousData?` | `boolean = true`                        | Preserves previous data during dependency transitions to eliminate UI flash. Set to `false` to reset immediately. |
 
 ## Usage
 
@@ -78,54 +53,36 @@ return (
 );
 ```
 
-## New Feature: `keepPreviousData`
+## `keepPreviousData` Option
 
 The `keepPreviousData` option (default: `true`) eliminates UI flash when navigating between views with different subscription dependencies.
 
-### Problem Without `keepPreviousData`
+### The Problem
 
 When switching between subscriptions (e.g., navigating between categories), the hook traditionally resets to `undefined` or the default value, causing a brief flash of empty content before new data loads:
 
-```typescript
-// User switches from category "work" to "personal"
-// 1. Hook unsubscribes from "work" data → returns default: []
-// 2. UI renders empty list (FLASH!)
-// 3. Hook subscribes to "personal" data
-// 4. UI renders "personal" todos
+```
+User switches from category "work" to "personal":
+1. Hook unsubscribes from "work" → returns default: []
+2. UI renders empty list (FLASH!)
+3. New subscription fires with "personal" data
+4. UI renders "personal" todos
 ```
 
-### Solution With `keepPreviousData: true` (Default)
+### The Solution
 
-The hook preserves the previous subscription's data while the new subscription initializes:
+With `keepPreviousData: true` (default), the hook preserves the previous subscription's data while the new subscription initializes:
 
-```typescript
-// User switches from category "work" to "personal"
-// 1. Hook unsubscribes from "work" data → KEEPS "work" data displayed
-// 2. Hook subscribes to "personal" data
-// 3. UI renders "personal" todos (NO FLASH!)
+```
+User switches from category "work" to "personal":
+1. Hook unsubscribes from "work" → KEEPS "work" data displayed
+2. New subscription fires with "personal" data
+3. UI renders "personal" todos (seamless transition)
 ```
 
-### Example
+### Disabling
 
-```typescript
-const todos = useSubscribe(
-  rep,
-  tx => getTodosByCategory(tx, category),
-  {
-    default: [],
-    dependencies: [category],
-    keepPreviousData: true, // Default - can be omitted
-  }
-);
-
-// When category changes:
-// - Old behavior: Shows [] briefly → new data
-// - New behavior: Shows old data → new data (smooth transition)
-```
-
-### When to Disable
-
-Set `keepPreviousData: false` if you want to explicitly show the default value during transitions:
+Set `keepPreviousData: false` if you want to show the default value during transitions:
 
 ```typescript
 const todos = useSubscribe(
@@ -141,14 +98,13 @@ const todos = useSubscribe(
 
 ## Changelog
 
-### 6.1.0 (React 19+ Fork)
+### 6.1.0
 
-- **NEW**: Add `keepPreviousData` option (default: `true`) to eliminate UI flash during subscription transitions
-- **Enhancement**: Add generation counter to prevent stale subscription callbacks
-- **Enhancement**: Add isMounted guard to prevent setState after unmount
-- **Enhancement**: Improve type safety with `Exclude<T, undefined>` instead of conditional type
-- **Enhancement**: Add comprehensive JSDoc documentation with examples
-- Requires React 19+
+- Add `keepPreviousData` option (default: `true`) to eliminate UI flash during subscription transitions
+- Add generation counter to prevent stale subscription callbacks from updating state
+- Add isMounted guard to prevent setState after component unmount
+- Improve error isolation in batched callbacks
+- Add comprehensive JSDoc documentation
 
 ### 6.0.0
 
@@ -157,7 +113,7 @@ Requires React 19+. See https://react.dev/blog/2024/12/05/react-19
 
 ### 5.0.1
 
-Change package to pure ESM. See See https://github.com/rocicorp/replicache-react/pull/61 for more information.
+Change package to pure ESM. See https://github.com/rocicorp/replicache-react/pull/61 for more information.
 
 ### 5.0.0
 

@@ -46,7 +46,12 @@ function doCallback() {
   callbacks = [];
   hasPendingCallback = false;
   for (const callback of cbs) {
-    callback();
+    try {
+      callback();
+    } catch (e) {
+      // Log but don't let one bad callback block others
+      console.error('useSubscribe callback error:', e);
+    }
   }
 }
 
@@ -145,14 +150,19 @@ export function useSubscribe<Tx, QueryRet, Default = undefined>(
   // Track the subscribable to detect transitions during render (before effect runs)
   const prevRRef = useRef<typeof r>(undefined);
   // Track deps to detect dependency changes during render
-  const prevDepsRef = useRef<DependencyList>([]);
+  const prevDepsRef = useRef<ReadonlyArray<unknown>>([]);
+  // Track whether effect has run at least once (to detect initial vs transition)
+  const hasRunEffectRef = useRef(false);
 
   // Detect if we're in a transition (r or deps changed since last effect)
+  // Only consider it a transition after the first effect run (hasRunEffectRef guards initial mount)
   const depsChanged = dependencies.length !== prevDepsRef.current.length ||
     dependencies.some((dep, i) => !Object.is(dep, prevDepsRef.current[i]));
-  const hasTransitioned = (r !== prevRRef.current || depsChanged) && prevRRef.current !== undefined;
+  const hasTransitioned = (r !== prevRRef.current || depsChanged) && hasRunEffectRef.current;
 
   useEffect(() => {
+    // Mark that effect has run at least once (for transition detection)
+    hasRunEffectRef.current = true;
     // Update refs after effect runs
     prevRRef.current = r;
     prevDepsRef.current = dependencies;
@@ -198,13 +208,14 @@ export function useSubscribe<Tx, QueryRet, Default = undefined>(
     return () => {
       isMounted = false;
       unsubscribe();
-      // Only reset state if keepPreviousData is false
+      // Always clear prevSnapshotRef to prevent memory leak (ref holds stale data)
+      prevSnapshotRef.current = undefined;
+      // Only reset snapshot state if keepPreviousData is false
       if (!keepPreviousData) {
         setSnapshot(undefined);
-        prevSnapshotRef.current = undefined;
       }
     };
-  }, [r, ...dependencies]);
+  }, [r, ...(dependencies ?? [])]);
 
   // Handle transitions: when deps changed and keepPreviousData is false, show default immediately
   if (hasTransitioned && !keepPreviousData) {
